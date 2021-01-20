@@ -39,6 +39,10 @@ services:
     networks:
       intranet:
         ipv4_address: 172.20.0.4
+    hostname: jira01
+    extra_hosts:
+        - "jira02:172.20.0.14"
+        - "jira03:172.20.0.24"
     depends_on:
       - postgres
     environment:

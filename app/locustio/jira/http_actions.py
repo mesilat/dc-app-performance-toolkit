@@ -4,9 +4,10 @@ from locustio.jira.requests_params import Login, BrowseIssue, CreateIssue, Searc
     BrowseProjects, AddComment, ViewDashboard, EditIssue, ViewProjectSummary, jira_datasets
 from locustio.common_utils import jira_measure, fetch_by_re, timestamp_int, generate_random_string, TEXT_HEADERS, \
     ADMIN_HEADERS, NO_TOKEN_HEADERS, RESOURCE_HEADERS, init_logger, raise_if_login_failed
-
+from requests.exceptions import HTTPError
 from util.conf import JIRA_SETTINGS
 import uuid
+from time import sleep;
 
 logger = init_logger(app_type='jira')
 jira_dataset = jira_datasets()
@@ -128,9 +129,9 @@ def create_issue(locust):
         raise_if_login_failed(locust)
         issue_body = params.prepare_issue_body(locust.session_data_storage['issue_body_params_dict'],
                                                user=locust.session_data_storage["username"])
-
+        logger.info(issue_body);
         r = locust.post('/secure/QuickCreateIssue.jspa?decorator=none', params=issue_body,
-                        headers=ADMIN_HEADERS, catch_response=True)
+                    headers=ADMIN_HEADERS, catch_response=True)
         content = r.content.decode('utf-8')
         if '"id":"project","label":"Project"' not in content:
             logger.error(f'{params.err_message_create_issue}: {content}')

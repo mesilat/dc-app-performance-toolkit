@@ -38,6 +38,11 @@ def app_specific_action(driver, datasets):
             # Scroll to Clients custom field, open the dropdown, and add a new option
             driver.execute_async_script("""
                 const done = arguments[0];
+
+                if (AJS.$('#resolution').val() === '-1') {
+                    AJS.$('#resolution').val('10030'); // set to Done
+                }
+
                 [...document.querySelectorAll('.field-group label')]
                 .filter(label => label.textContent === 'Clients')
                 .forEach(label => {

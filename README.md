@@ -22,6 +22,15 @@ Run all tests using the machine created:
 ```
 eval $(docker-machine env demo)
 ```
+The cluster is using HAPROXY as a load balancer. It is configured to send logs
+to the host machine `rsyslog`. Configuration file is `/etc/rsyslog.d/haproxy.conf`:
+```
+$ModLoad imudp
+$UDPServerAddress 0.0.0.0
+$UDPServerRun 514
+local0.* /var/log/haproxy-traffic.log
+local0.notice /var/log/haproxy-admin.log
+```
 
 ## One node app testing
 

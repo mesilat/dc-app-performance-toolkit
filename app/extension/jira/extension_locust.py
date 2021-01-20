@@ -1,5 +1,6 @@
 import re
 from locustio.common_utils import init_logger, jira_measure
+import random
 
 logger = init_logger(app_type='jira')
 data = {'': 10, 'al': 4, 'ba': 3,'co': 7, 'op': 0, 'chi': 6, 'ame': 1}
