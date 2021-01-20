@@ -1,137 +1,84 @@
-# Data Center App Performance Toolkit 
-The Data Center App Performance Toolkit extends [Taurus](https://gettaurus.org/) which is an open source performance framework that executes JMeter and Selenium.
+# App performance testing with Hetzner cloud
 
-This repository contains Taurus scripts for performance testing of Atlassian Data Center products: Jira, Confluence, and Bitbucket.
+Use Hetzner cloud top machine to run the app performance tests:
 
-## Supported versions
-* Supported Jira versions: 
-    * Jira [Long Term Support release](https://confluence.atlassian.com/enterprise/atlassian-enterprise-releases-948227420.html): 7.13.15 and 8.5.8
-    * Jira Platform release: 8.0.3
-    
-* Supported Confluence versions:
-    * Confluence [Long Term Support release](https://confluence.atlassian.com/enterprise/atlassian-enterprise-releases-948227420.html): 6.13.13 and 7.4.4
-    * Confluence Platform release: 7.0.5
-
-* Supported Bitbucket Server versions:
-    * Bitbucket Server [Long Term Support release](https://confluence.atlassian.com/enterprise/atlassian-enterprise-releases-948227420.html): 6.10.5
-    * Bitbucket Server Platform release: 7.0.5
-
-## Support
-In case of technical questions, issues or problems with DC Apps Performance Toolkit, contact us for support in the [community Slack](http://bit.ly/dcapt_slack) **#data-center-app-performance-toolkit** channel.
-
-## Installation and set up
-
-#### Dependencies
-* Python 3.6+ and pip
-* JDK 8
-* Google Chrome web browser
-* Git client (only for Bitbucket Server)
-
-Please make sure you have a version of Chrome browser that is compatible with [ChromeDriver](http://chromedriver.chromium.org/downloads) version set in app/$product.yml file (modules->selenium->chromedriver->version).
-
-If a first part of ChromeDriver version does not match with a first part of your Chrome browser version, update Chrome browser or set compatible [ChromeDriver](http://chromedriver.chromium.org/downloads) version in .yml file.
-
-### macOS/Linux
-Make sure that you have [Python](https://www.python.org/downloads/) 3.6+, pip, and [JDK 8](https://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html) installed:
 ```
-python3 --version
-pip --version
-java -version
+# docker-machine rm demo
+docker-machine create \
+--driver=hetzner \
+--hetzner-api-token=$HETZNER_TOKEN \
+--hetzner-server-type=cx51 \
+--hetzner-server-location=fsn1 \
+demo
 ```
-For Bitbucket Server check that [Git](https://git-scm.com/downloads) is installed:
+Using Hetzner console add the machine to the local network (`network-1`)
+and setup docker networking:
 ```
-git --version
+docker network create -d bridge \
+-o com.docker.network.bridge.host_binding_ipv4=$(ifconfig ens10 | grep "inet " | awk '{print $2}') \
+intranet
+```
+Run all tests using the machine created:
+```
+eval $(docker-machine env demo)
 ```
 
-We recommend using virtualenv for Taurus.
+## One node app testing
 
-1. Install virtualenv with pip:
+Confluence Fields plugin is an integration app that takes its data from
+Confluence and populates JIRA custom fields with this data. Thus the test
+setup includes both Confluence server and JIRA DC.
+
+### General cluster tests
+
+Clone Atlassian DC performance toolkit:
 ```
-pip install virtualenv
+git clone https://github.com/atlassian/dc-app-performance-toolkit.git dcapt.orig
+cd dcapt.orig
 ```
-2. Create new virtual env with python3:
+Set JIRA address and credentials in `app/jira.yml` and run the test:
+```
+docker run --shm-size=4g --rm -v "$PWD:/dc-app-performance-toolkit" atlassian/dcapt jira.yml
+```
+Install Confluence Fields plugin and repeat the test.
+
+### App-specific tests
+
+Confluence Fields plugin actions to test are:
+
+- view and update custom field with JIRA UI (selenium)
+- query JIRA for Confluence pages to populate custom field options (locust)
+
+The selenium UI test opens a browse issue page, calculates the number of pages
+in a Confluence field, updates the issue by adding an extra page to the field
+via EditIssue web action, then calculates the number of pages again to make
+sure that it equals the initial value + 1.
+
+Updating a field via UI takes longer seconds to test due to a number of waits
+that I had to introduce in the test code:
+
+- 2s wait to get AUI select2 fully initialized
+- 1s wait to get selected option copied to the field's input
+- 1s wait after edit dialog submit
+
+These are not a part of the plugin code, but of a test code.
+
+Locust endpoint test is set to make sure that the plugin's REST endpoint actually
+returns correct number of Confluence pages to populate a custom field. This is
+the only general-purpose endpoint in the plugin, others are used for administration
+and configuration.
+
+To run app-specific tests:
+```
+git clone https://github.com/mesilat/dc-app-performance-toolkit.git dcapt.apps
+cd dcapt.apps
+docker run --shm-size=4g --rm -v "$PWD:/dc-app-performance-toolkit" atlassian/dcapt jira.yml
+```
+If need running app-specific tests locally:
 ```
 virtualenv venv -p python3
-```
-3. Activate virtual env:
-```
 source venv/bin/activate
-```
-4. Install dependencies:
-```
 pip install -r requirements.txt
+cd app
+bzt jira.yml
 ```
-
-### Windows
-#### Installing Taurus manually
-Make sure you have [Python](https://www.python.org/downloads/) 3.6+, pip, and [JDK 8](https://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html) installed:
-```
-python --version or python3 --version
-pip --version
-java -version
-Microsoft Visual C++ 14
-```
-For Bitbucket Server check that [Git](https://git-scm.com/downloads) is installed:
-```
-git --version
-```
-
-Make sure you have Visual Studio build tool v14.22 installed. 
-Otherwise, download it from [Microsoft Visual C++ Build Tools:](https://visualstudio.microsoft.com/downloads) and do the following:
-1. Select **Tools for Visual Studio 2019**.
-2. Download and run **Build Tools for Visual Studio 2019**.
-3. Select the **C++ build tools** check box.
-4. Select the **MSVC v142 - VS 2019 C++ x64/x86 build tools (v14.22)** check box (clear all the others).
-5. Click **Install**.
-
-We recommend using virtualenv for Taurus.
-
-1. Install virtualenv with pip:
-```
-pip install virtualenv
-```
-2. Create new virtual env with python3:
-```
-virtualenv venv -p python
-```
-3. Activate virtual env:
-```
-venv\Scripts\activate
-```
-4. Install dependencies:
-```
-pip install -r requirements.txt
-```
-
-## Upgrading the toolkit
-Get latest codebase from master branch:
-```
-git pull
-```
-Activate virtual env for the toolkit and install latest versions of libraries:
-```
-pip install -r requirements.txt
-```
-
-## Additional info
-Official Taurus installation instructions are located [here](https://gettaurus.org/docs/Installation/).
-
-## Analytics
-The Data Center App Performance Toolkit includes some simple usage analytics.  
-We collect this data to better understand how the community is using the Performance Toolkit, and to help us plan our roadmap.
-When a performance tests is completed we send one HTTP POST request with analytics.
-
-The request include the following data, and will in no way contain PII (Personally Identifiable Information).
-- application under test (Jira/Confluence/Bitbucket)
-- timestamp of performance toolkit run
-- performance toolkit version
-- operating system
-- `concurrency` and `test_duration` from `$product.yml` file
-- actual run duration
-- executed action names and success rates
-- unique user identifier (non PII)
-
-To help us continue improving the Toolkit, we’d love you to keep these analytics enabled in testing, staging, and production. If you don’t want to send us analytics, you can turn off the `allow_analytics` toggle in `$product.yml` file.
-
-## Running Taurus
-Navigate to [docs](docs) folder and follow instructions.
