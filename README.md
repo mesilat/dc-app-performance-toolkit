@@ -24,6 +24,8 @@ docker-machine create \
 --hetzner-server-location=fsn1 \
 demo
 ```
+![Hetzner machine](https://github.com/mesilat/dc-app-performance-toolkit/blob/master/Screenshot%202021-01-23%20at%2000.25.39.png)
+
 As setup is not for public use I create a local network (`network-1`)
 and configure Docker networking as follows:
 ```
