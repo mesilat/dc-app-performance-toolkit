@@ -52,7 +52,7 @@ defaults
 
 I use `docker-compose` to create a cluster in one-node, two-nodes and four-nodes
 configuration. The configuration files (`haproxy.cfg` and `docker-compose.yml`)
-could be found in folders `onenode`, `twonodes` and `fournodes` respectively.
+could be found in folders [onenode], [twonodes] and [fournodes].
 
 ### Running Tests
 
@@ -120,7 +120,7 @@ The `Confluence Custom Fields` plugin actions to test are:
 
 ### Selenium UI Test
 
-The selenium UI [test](app/extension/jira/extension_ui,py)
+The selenium UI [test](app/extension/jira/extension_ui.py)
 opens a browse issue page, calculates the number of pages
 in a Confluence custom field, updates the issue by adding an extra value to the field
 via EditIssue web action. Then it calculates the number of pages again to make
@@ -137,7 +137,7 @@ These are not part of the plugin code, but of the test code.
 
 ### Locust
 
-Locust [test](app/extension/jira/extension_locust,py)
+Locust [test](app/extension/jira/extension_locust.py)
 is set to make sure that the plugin's REST endpoint actually
 returns correct number of Confluence pages to populate a custom field. This is
 the general-purpose endpoint in the plugin, while other endpoints are used for
