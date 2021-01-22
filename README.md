@@ -52,7 +52,7 @@ defaults
 
 I use `docker-compose` to create a cluster in one-node, two-nodes and four-nodes
 configuration. The configuration files (`haproxy.cfg` and `docker-compose.yml`)
-could be found in folders [onenode], [twonodes] and [fournodes].
+could be found in folders [onenode](onenode), [twonodes](twonodes) and [fournodes](fournodes).
 
 ### Running Tests
 
