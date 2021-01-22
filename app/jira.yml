@@ -4,7 +4,7 @@ settings:
   aggregator: consolidator
   verbose: false
   env:
-    application_hostname: docker.home    # Jira DC hostname without protocol and port e.g. test-jira.atlassian.com or localhost
+    application_hostname: demo.mesilat.com    # Jira DC hostname without protocol and port e.g. test-jira.atlassian.com or localhost
     application_protocol: http      # http or https
     application_port: 80            # 80, 443, 8080, 2990, etc
     secure: False                   # Set False to allow insecure connections, e.g. when using self-signed SSL certificate
@@ -35,7 +35,7 @@ settings:
     browse_boards: 2
     standalone_extension: 1 # By default disabled
     # Custom dataset section.
-    custom_dataset_query: "project = KANS and id <= 2010154"  # Write JQL query to add JQL output to the app/datasets/jira/custom-issues.csv, e.g. "summary ~ 'AppIssue*'"
+    custom_dataset_query: "project = KANS"  # Write JQL query to add JQL output to the app/datasets/jira/custom-issues.csv, e.g. "summary ~ 'AppIssue*'"
 services:
   - module: shellexec
     prepare:

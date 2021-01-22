@@ -43,7 +43,7 @@ services:
     depends_on:
       - postgres
     environment:
-      ATL_PROXY_NAME: demo.mesilat.com
+      ATL_PROXY_NAME: docker.home
       ATL_TOMCAT_PORT: 8080
       ATL_PROXY_PORT: 80
       ATL_TOMCAT_SCHEME: http
@@ -58,6 +58,32 @@ services:
       - /var/docker/jira01:/var/atlassian/application-data/jira
       - /var/docker/jira.shared:/var/atlassian/application-data/jira-shared
 
+  jira02:
+    restart: unless-stopped
+    image: atlassian/jira-software:8.5.8
+    container_name: jira02
+    networks:
+      intranet:
+        ipv4_address: 172.20.0.14
+    hostname: jira02
+    depends_on:
+      - postgres
+    environment:
+      ATL_PROXY_NAME: docker.home
+      ATL_TOMCAT_PORT: 8080
+      ATL_PROXY_PORT: 80
+      ATL_TOMCAT_SCHEME: http
+      ATL_TOMCAT_SECURE: "false"
+      ATL_TOMCAT_CONTEXTPATH: /jira
+      ATL_DB_TYPE: postgresql
+      ATL_JDBC_URL: jdbc:postgresql://postgres:5432/jira
+      ATL_JDBC_USER: jira_user
+      ATL_JDBC_PASSWORD: not_giving_away
+      JVM_SUPPORT_RECOMMENDED_ARGS: -Xms8192m -Xmx8192m -XX:+UseG1GC
+    volumes:
+      - /var/docker/jira02:/var/atlassian/application-data/jira
+      - /var/docker/jira.shared:/var/atlassian/application-data/jira-shared
+
   confluence:
     restart: unless-stopped
     image: atlassian/confluence-server:7.4.4
@@ -68,7 +94,7 @@ services:
     depends_on:
       - postgres
     environment:
-      ATL_PROXY_NAME: demo.mesilat.com
+      ATL_PROXY_NAME: docker.home
       ATL_TOMCAT_PORT: 8090
       ATL_PROXY_PORT: 80
       ATL_TOMCAT_SCHEME: http
