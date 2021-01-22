@@ -53,7 +53,7 @@ services:
       ATL_JDBC_URL: jdbc:postgresql://postgres:5432/jira
       ATL_JDBC_USER: jira_user
       ATL_JDBC_PASSWORD: not_giving_away
-      JVM_SUPPORT_RECOMMENDED_ARGS: -Xms8192m -Xmx8192m -XX:+UseG1GC
+      JVM_SUPPORT_RECOMMENDED_ARGS: -Xms4096m -Xmx4096m -XX:+UseG1GC
     volumes:
       - /var/docker/jira01:/var/atlassian/application-data/jira
       - /var/docker/jira.shared:/var/atlassian/application-data/jira-shared
