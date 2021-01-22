@@ -1,21 +1,31 @@
 # App performance testing with Hetzner cloud
 
+The app tested (`Confluence Custom Fields`) is an integration plugin that takes
+a list of pages from Confluence and renders it as a custom field in JIRA. This
+test runs in Docker and uses the following containers:
+
+- JIRA cluster nodes
+- Confluence instance
+- PostgreSQL database
+- Haproxy load balancer
+
 ## Test setup
 
 ### Docker machine
 
-I use Hetzner cloud (nearly) top-level machine to run the app performance tests:
-
+I use Hetzner cloud top-level machine to run the app performance tests. Lower
+horse-power configurations proved to be inadequate to this heavy load testing,
+especially with 4-node JIRA cluster.
 ```
 docker-machine create \
 --driver=hetzner \
 --hetzner-api-token=$HETZNER_TOKEN \
---hetzner-server-type=cx51 \
+--hetzner-server-type=cpx51 \
 --hetzner-server-location=fsn1 \
 demo
 ```
-As this JIRA cluster is not for public use I create a local network (`network-1`)
-and setup docker networking as follows:
+As setup is not for public use I create a local network (`network-1`)
+and configure Docker networking as follows:
 ```
 docker network create --driver=bridge \
 -o com.docker.network.bridge.host_binding_ipv4=$(ifconfig ens10 | grep "inet " | awk '{print $2}') \
@@ -25,7 +35,7 @@ docker network create --driver=bridge \
 intranet
 ```
 
-### Load Balancer
+### Logging
 
 I am using `haproxy` as a load balancer and I want to have access to its logs
 for troubleshooting. Docker machine uses `rsyslog` so I create a new configuration
@@ -56,9 +66,10 @@ could be found in folders [onenode](onenode), [twonodes](twonodes) and [fournode
 
 ### Running Tests
 
-For me running locust test produced errors:
+I had an issue running locust tests with the latest version of `atlassian/dcapt`:
 ```
-selenium.common.exceptions.SessionNotCreatedException: Message: session not created: This version of ChromeDriver only supports Chrome version 86
+selenium.common.exceptions.SessionNotCreatedException: Message: session not created:
+This version of ChromeDriver only supports Chrome version 86
 Current browser version is 88.0.4324.96 with binary path /usr/bin/google-chrome      
 ```
 So I reverted to a previous version that was known to be working without this issue:
@@ -70,15 +81,13 @@ docker run --shm-size=4g --rm -v "$PWD:/dc-app-performance-toolkit" atlassian/dc
 
 ### App Dataset
 
-The app tested (`Confluence Custom Fields`) is an integration plugin that takes
-a list of pages from Confluence and renders it as a custom field in JIRA. Thus the
-test setup requires a Confluence container as well. Confluence is pre-filled with
-100 pages with some basic company data. In JIRA there is a custom field `Clients`
-that takes its values from Confluence company data pages.
+Confluence is pre-filled with 100 pages of some basic company data.
+In JIRA there is a custom field `Clients` that takes its values from the Confluence
+company data pages.
 
-App-specific dataset utilises Atlassian's DC performance toolkit sample data.
+JIRA app-specific dataset utilises Atlassian's DC performance toolkit sample data.
 Issues in project `KANS` were edited to have 1 to 10 Confluence pages in
-its Clients field to the total of 4000+ issues:
+their `Clients` field to the total of 4000+ issues:
 
 ```
 const testLoadCCF = async (issues) => {
@@ -109,7 +118,6 @@ const testLoadCCF = async (issues) => {
   }
 }
 ```
-
 
 ## App-specific Tests
 
@@ -143,13 +151,11 @@ returns correct number of Confluence pages to populate a custom field. This is
 the general-purpose endpoint in the plugin, while other endpoints are used for
 the plugin administration and configuration.
 
-### Running Tests
-
 To run app-specific tests:
 ```
 git clone https://github.com/mesilat/dc-app-performance-toolkit.git dcapt.apps
 cd dcapt.apps
-docker run --shm-size=4g --rm -v "$PWD:/dc-app-performance-toolkit" atlassian/dcapt@sha256:5137458ea19ddc966e9aa579ca9d52da98dbce27331c0ecbba87631354b0c074 jira.yml
+docker run --shm-size=4g --rm -v "$PWD:/dc-app-performance-toolkit" atlassian/dcapt jira.yml
 ```
 If need to run app-specific tests locally:
 ```
