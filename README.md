@@ -143,6 +143,8 @@ returns correct number of Confluence pages to populate a custom field. This is
 the general-purpose endpoint in the plugin, while other endpoints are used for
 the plugin administration and configuration.
 
+### Running Tests
+
 To run app-specific tests:
 ```
 git clone https://github.com/mesilat/dc-app-performance-toolkit.git dcapt.apps
