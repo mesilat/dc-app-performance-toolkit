@@ -35,7 +35,7 @@ settings:
     browse_boards: 2
     standalone_extension: 1 # By default disabled
     # Custom dataset section.
-    custom_dataset_query: "project = KANS"  # Write JQL query to add JQL output to the app/datasets/jira/custom-issues.csv, e.g. "summary ~ 'AppIssue*'"
+    custom_dataset_query: "project = KANS and Clients is not null"  # Write JQL query to add JQL output to the app/datasets/jira/custom-issues.csv, e.g. "summary ~ 'AppIssue*'"
 services:
   - module: shellexec
     prepare:
